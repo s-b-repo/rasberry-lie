@@ -1,9 +1,13 @@
 import subprocess
 import time
 import random
+import os
 
 def random_mac():
     return ":".join([hex(random.randint(0x00, 0xff))[2:].zfill(2) for _ in range(6)])
+
+# Drop all deauth packets from incoming traffic
+subprocess.call(['iptables', '-I', 'INPUT', '-p', 'icmp', '--icmp-type', '13', '-j', 'DROP'])
 
 while True:
     try:
@@ -21,4 +25,6 @@ while True:
             subprocess.call(['ifconfig', 'wlan0', 'up'])
         time.sleep(1)
     except KeyboardInterrupt:
+        # Restore iptables rules before exiting
+        subprocess.call(['iptables', '-D', 'INPUT', '-p', 'icmp', '--icmp-type', '13', '-j', 'DROP'])
         break
