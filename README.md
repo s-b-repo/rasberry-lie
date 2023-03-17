@@ -12,3 +12,6 @@ Install the necessary dependencies: You'll need to install some packages using t
 
 sudo apt-get update
 sudo apt-get install macchanger aircrack-ng
+
+
+Run the script: Open a terminal window and navigate to the directory where the Python script is saved. Use the command python wifi_deauther.py to run the script.
