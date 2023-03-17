@@ -14,4 +14,4 @@ sudo apt-get update
 sudo apt-get install macchanger aircrack-ng
 
 
-Run the script: Open a terminal window and navigate to the directory where the Python script is saved. Use the command python wifi_deauther.py to run the script.
+Run the script: Open a terminal window and navigate to the directory where the Python script is saved. Use the command python all_is_fair_in_love_war.py to run the script.
