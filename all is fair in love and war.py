@@ -1,14 +1,12 @@
-from subprocess import call, check_output
-from itertools import count as infcount
-from time import sleep
-from random import randint
+import subprocess
+import time
+import random
 import os
 
-class Deauth:
-    def __init__(self) -> None:
-        # Drop all deauth packets from incoming traffic
-        call(['iptables', '-I', 'INPUT', '-p', 'icmp', '--icmp-type', '13', '-j', 'DROP'])
+def random_mac():
+    return ":".join([hex(random.randint(0x00, 0xff))[2:].zfill(2) for _ in range(6)])
 
+main
     def random_mac(self) -> str:
         return ":".join([hex(randint(0x00, 0xff))[2:].zfill(2) for _ in range(6)])
 
@@ -36,3 +34,4 @@ if __name__ == "__main__":
             # Restore iptables rules before exiting
             call(['iptables', '-D', 'INPUT', '-p', 'icmp', '--icmp-type', '13', '-j', 'DROP'])
             break
+
