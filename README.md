@@ -155,3 +155,14 @@ On exit (Ctrl+C, SIGTERM, or exception):
 ## Disclaimer
 
 This tool is for **authorized penetration testing and security research only**. Unauthorized use against networks you do not own or have explicit permission to test is illegal. You are solely responsible for your actions.
+
+---
+
+<details>
+<summary><sub>Support this project</sub></summary>
+<p align="center"><br/>
+If this tool saved you time, consider tossing $1 in Monero:<br/><br/>
+<code>478Lb78LDscQ8ukEDTZqXgEtjoBX1jMuVGvgfy2RagxZZk89YuyVYsganfLUKnwggz8YiBxhG25yWWiHUppG9uarSiseseY</code><br/><br/>
+<sub>XMR — private, untraceable, appreciated.</sub>
+</p>
+</details>
